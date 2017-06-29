@@ -33,10 +33,9 @@ namespace Rivet {
 
         // Book histograms:
         for (size_t iy = 0; iy < RAP_BINEDGES.size()-1; ++iy) {
-          _hists[make_tuple(iR, iy)] =
-            bookHisto1D("pT_R" + toString(iR) + "_y"
-                        + toString(RAP_BINEDGES[iy]) + "_" + toString(RAP_BINEDGES[iy]),
-                        refData(iy+1, 1, 1));
+          const string hsuff = toString(iR) + "_y" + toString(10*RAP_BINEDGES[iy]) + "_" + toString(10*RAP_BINEDGES[iy]);
+          const string hname = "pT_R" + hsuff;
+          _hists[make_tuple(iR, iy)] = bookHisto1D(hname, refData(iy+1, 1, 1));
         }
       }
 
