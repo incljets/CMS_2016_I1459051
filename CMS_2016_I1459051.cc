@@ -11,13 +11,14 @@ namespace Rivet {
   class CMS_2016_I1459051 : public Analysis {
   public:
 
-    // Constructor
-    DEFAULT_RIVET_ANALYSIS_CTOR(CMS_2016_I1459051);
-
     // Jet radii
     static constexpr array<double,6> JET_RADII = {0.2, 0.3, 0.4, 0.5, 0.6, 0.7};
     // |y| bin edges
     static constexpr array<double,8> RAP_BINEDGES = {0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 4.7};
+
+
+    // Constructor
+    DEFAULT_RIVET_ANALYSIS_CTOR(CMS_2016_I1459051);
 
 
     // Book histograms and initialize projections:
