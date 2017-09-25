@@ -33,10 +33,13 @@ namespace Rivet {
 
         // Book histograms:
         for (size_t iy = 0; iy < RAP_BINEDGES.size()-1; ++iy) {
-          const string hsuff = toString(iR) + "_y" + toString(10*RAP_BINEDGES[iy]) + "_" + toString(10*RAP_BINEDGES[iy]);
-          const string hname = "pT_R" + hsuff;
-          _hists[make_tuple(iR, iy)] = bookHisto1D(hname, refData(iy+1, 1, 1));
+          const string hsuff = "_R" + toString(iR) + "_y" + toString(10*RAP_BINEDGES[iy]) + "_" + toString(10*RAP_BINEDGES[iy]);
+          _hists[make_tuple(iR, iy, "pT")] = bookHisto1D("pT" + hsuff, refData(iy+1, 1, 1));
+          for (const string& s : {"GA1020", "GA1010", "GA1005", "GA0000", "GA2000"}) {
+            _hists[make_tuple(iR, iy, s)] = bookHisto1D(s+hsuff, 20, 0.0, 1.0);
+          }
         }
+
       }
 
     }
@@ -56,14 +59,16 @@ namespace Rivet {
         // Fill histograms
         for (const Jet& j : jets) {
 
-          // pT spectra in |y| bins
+          // Everything in |y| bins
           // Safe index decoding from Rivet 2.6.0:
           // const int iy = binIndex(j.absrap(), RAP_BINEDGES);
           // if (iy < 0) continue;
           // For now:
           if (!inRange(j.absrap(), RAP_BINEDGES.front(), RAP_BINEDGES.back())) continue; // outside range
           const size_t iy = std::distance(RAP_BINEDGES.begin(), std::upper_bound(RAP_BINEDGES.begin(), RAP_BINEDGES.end(), j.absrap()));
-          _hists[make_tuple(iR, iy)]->fill(j.pT()/GeV, weight);
+
+          // pT spectrum
+          _hists[make_tuple(iR, iy, "pT")]->fill(j.pT()/GeV, weight);
 
           // Angularities
           double scalar_pt = 0, sum1020 = 0, sum1010 = 0, sum1005 = 0, sum0000 = 0, sum2000 = 0;
@@ -78,8 +83,14 @@ namespace Rivet {
           const double ga1020 = sum1020 / pow(scalar_pt, 2.0) * pow(R, 1.0);
           const double ga1010 = sum1010 / pow(scalar_pt, 1.0) * pow(R, 1.0);
           const double ga1005 = sum1005 / pow(scalar_pt, 0.5) * pow(R, 1.0);
-          const double ga0000 = sum0000 / pow(scalar_pt, 0.0) * pow(R, 1.0);
+          const double ga0000 = sum0000 / pow(scalar_pt, 0.0) * pow(R, 0.0);
           const double ga2000 = sum2000 / pow(scalar_pt, 0.0) * pow(R, 2.0);
+          //
+          _hists[make_tuple(iR, iy, "GA1020")]->fill(ga1020, weight);
+          _hists[make_tuple(iR, iy, "GA1010")]->fill(ga1010, weight);
+          _hists[make_tuple(iR, iy, "GA1005")]->fill(ga1005, weight);
+          _hists[make_tuple(iR, iy, "GA0000")]->fill(ga0000, weight);
+          _hists[make_tuple(iR, iy, "GA2000")]->fill(ga2000, weight);
 
         }
       }
@@ -96,7 +107,7 @@ namespace Rivet {
 
   private:
 
-    map<tuple<size_t,size_t>, Histo1DPtr> _hists;
+    map<tuple<size_t,size_t,string>, Histo1DPtr> _hists;
 
   };
 
