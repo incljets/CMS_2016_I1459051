@@ -34,9 +34,14 @@ namespace Rivet {
         // Book histograms:
         for (size_t iy = 0; iy < RAP_BINEDGES.size()-1; ++iy) {
           const string hsuff = "_R" + toString(iR) + "_y" + toString(10*RAP_BINEDGES[iy]) + "_" + toString(10*RAP_BINEDGES[iy]);
+
+          // pT spectra
           _hists[make_tuple(iR, iy, "pT")] = bookHisto1D("pT" + hsuff, refData(iy+1, 1, 1));
-          for (const string& s : {"GA1020", "GA1010", "GA1005", "GA0000", "GA2000"}) {
-            _hists[make_tuple(iR, iy, s)] = bookHisto1D(s+hsuff, 20, 0.0, 1.0);
+
+          // Angularities (treat multiplicity differently)
+          _hists[make_tuple(iR, iy, "GA0000")] = bookHisto1D("GA0000"+hsuff, 151, -0.5, 150.5);
+          for (const string& s : {"GA1020", "GA1010", "GA1005", "GA2000"}) { //< without GA0000 = multiplicity
+            _hists[make_tuple(iR, iy, s)] = bookHisto1D(s+hsuff, 200, 0.0, 1.0);
           }
         }
 
@@ -72,19 +77,22 @@ namespace Rivet {
 
           // Angularities
           double scalar_pt = 0, sum1020 = 0, sum1010 = 0, sum1005 = 0, sum0000 = 0, sum2000 = 0;
-          for (const Particle& p : jets.front().particles()) {
-            scalar_pt += p.pT();
-            sum1020 += pow(p.pT(), 2.0) * pow(deltaR(p, jets[0]), 1.0);
-            sum1010 += pow(p.pT(), 1.0) * pow(deltaR(p, jets[0]), 1.0);
-            sum1005 += pow(p.pT(), 0.5) * pow(deltaR(p, jets[0]), 1.0);
-            sum0000 += pow(p.pT(), 0.0) * pow(deltaR(p, jets[0]), 0.0);
-            sum2000 += pow(p.pT(), 0.0) * pow(deltaR(p, jets[0]), 2.0);
+          for (const Particle& p : j.particles()) {
+            const double pt = p.pT();
+            const double dr = deltaR(p, j);
+
+            scalar_pt += pt;
+            sum1020 += sqr(pt)  * dr;
+            sum1010 += pt       * dr;
+            sum1005 += sqrt(pt) * dr;
+            sum0000 += 1        * 1;
+            sum2000 += 1        * sqr(dr);
           }
-          const double ga1020 = sum1020 / pow(scalar_pt, 2.0) * pow(R, 1.0);
-          const double ga1010 = sum1010 / pow(scalar_pt, 1.0) * pow(R, 1.0);
-          const double ga1005 = sum1005 / pow(scalar_pt, 0.5) * pow(R, 1.0);
-          const double ga0000 = sum0000 / pow(scalar_pt, 0.0) * pow(R, 0.0);
-          const double ga2000 = sum2000 / pow(scalar_pt, 0.0) * pow(R, 2.0);
+          const double ga1020 = sum1020 / sqr(scalar_pt)  * R;
+          const double ga1010 = sum1010 / scalar_pt       * R;
+          const double ga1005 = sum1005 / sqrt(scalar_pt) * R;
+          const double ga0000 = sum0000 / 1               * 1;
+          const double ga2000 = sum2000 / 1               * sqr(R);
           //
           _hists[make_tuple(iR, iy, "GA1020")]->fill(ga1020, weight);
           _hists[make_tuple(iR, iy, "GA1010")]->fill(ga1010, weight);
