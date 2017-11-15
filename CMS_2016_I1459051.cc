@@ -32,7 +32,7 @@ namespace Rivet {
         declare(FastJets(fs, FastJets::ANTIKT, R), "JetsAK" + toString(iR));
 
         // Book histograms:
-        for (size_t iy = 0; iy < RAP_BINEDGES.size()-1; ++iy) {
+        for (size_t iy = 0; iy < RAP_BINEDGES.size(); ++iy) {
           const string hsuff = "_R" + toString(iR) + "_y" + toString(10*RAP_BINEDGES[iy]) + "_" + toString(10*RAP_BINEDGES[iy]);
 
           // pT spectra
