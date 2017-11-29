@@ -54,7 +54,7 @@ namespace Rivet {
         // Multiplicity histograms
         _jhists[make_tuple(iR, "njet_excl")] = bookHisto1D("njet_excl" + hsuff, 10, -0.5, 9.5);
         /// @todo Prefer to compute the inclusive spectrum from the excl one in the finalize()?
-        _jhists[make_tuple(iR, "njet_incl")] = bookHisto1D("njet_incl" + hsuff, 10, -0.5, 9.5);
+        // _jhists[make_tuple(iR, "njet_incl")] = bookHisto1D("njet_incl" + hsuff, 10, -0.5, 9.5);
 
         // Jet pT and rapidity spectra
         for (size_t ijet = 1; ijet <= 3; ++ijet) {
@@ -105,9 +105,9 @@ namespace Rivet {
 
         // Jet multiplicity histograms
         _jhists[make_tuple(iR, "njet_excl")]->fill(jets.size(), weight);
-        for (size_t ijet = 1; ijet <= jets.size(); ++ijet) {
-          _jhists[make_tuple(iR, "njet_incl")]->fill(ijet, weight);
-        }
+        // for (size_t ijet = 1; ijet <= jets.size(); ++ijet) {
+        //   _jhists[make_tuple(iR, "njet_incl")]->fill(ijet, weight);
+        // }
 
         // Need some R-jets from here on
         if (jets.empty()) continue;
@@ -180,7 +180,10 @@ namespace Rivet {
     // Finalize
     void finalize() {
       for (auto k_hptr : _jhists)
-        scale(k_hptr.second, crossSection()/sumOfWeights()/2.0);
+        scale(k_hptr.second, crossSection()/sumOfWeights());
+      for (auto k_hptr : _xhists)
+        scale(k_hptr.second, crossSection()/sumOfWeights());
+      /// @todo Compute inclusive Njet spectrum here
     }
 
 
