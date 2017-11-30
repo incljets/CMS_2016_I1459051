@@ -31,8 +31,8 @@ namespace Rivet {
   public:
 
     // Jet radii
-    static constexpr array<double,6> JET_RADII = {0.3, 0.4, 0.5, 0.6, 0.7, 1.0};
-
+    // static constexpr array<double,6>
+    double JET_RADII[6] = {0.3, 0.4, 0.5, 0.6, 0.7, 1.0};
 
     // Constructor
     DEFAULT_RIVET_ANALYSIS_CTOR(LH2017_ZHJETS);
@@ -47,7 +47,7 @@ namespace Rivet {
 
         // Initialize the projections
         const size_t iR = size_t(10 * R);
-        declare(FastJets(fs, FastJets::ANTIKT, R), "JetsAK" + toString(iR));
+        declare(FastJets(fs, FastJets::ANTIKT, R, JetAlg::DECAY_MUONS), "JetsAK" + toString(iR));
 
         // Book histograms using this suffix
         const string hsuff = "_R" + toString(iR);
@@ -89,9 +89,16 @@ namespace Rivet {
     void analyze(const Event& event) {
       const double weight = event.weight();
 
-      // Get Higgs or Z (assume status == 1)
-      const Particles bosons = apply<FinalState>(event, "FS")
-        .particles(Cuts::abspid == PID::ZBOSON || Cuts::abspid == PID::HIGGS);
+      // Get Higgs or Z
+      // const Particles bosons = apply<FinalState>(event, "FS") //< assuming status == 1
+      //   .particles(Cuts::pid == PID::ZBOSON || Cuts::pid == PID::HIGGS);
+      const Particles zs = event.allParticles(lastParticleWith(Cuts::pid == PID::ZBOSON));
+      const Particles hs = event.allParticles(lastParticleWith(Cuts::pid == PID::HIGGS));
+      const Particles bosons = zs + hs;
+      if (bosons.size() > 1) {
+        MSG_WARNING("More than one stable Z/H found... skipping event");
+        vetoEvent;
+      }
       // Fill boson pT and |y| spectra
       if (!bosons.empty()) {
         const Particle& boson = bosons.front();
