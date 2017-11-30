@@ -41,6 +41,7 @@ namespace Rivet {
     // Book histograms and initialize projections:
     void init() {
       const FinalState fs;
+      declare(fs, "FS");
 
       for (double R : JET_RADII) {
 
@@ -88,13 +89,15 @@ namespace Rivet {
     void analyze(const Event& event) {
       const double weight = event.weight();
 
-      // Get Higgs or Z
-      /// @todo Scan whole event or assume status == 1?
-      // const double PTMAX = (boson.pid() == PID::HIGGS) ? 500*GeV : 1*TeV;
+      // Get Higgs or Z (assume status == 1)
+      const Particles bosons = apply<FinalState>(event, "FS")
+        .particles(Cuts::abspid == PID::ZBOSON || Cuts::abspid == PID::HIGGS);
       // Fill boson pT and |y| spectra
-      Particle boson;
-      _xhists["XpT"]->fill(boson.pT()/GeV, weight);
-      _xhists["Xy"]->fill(boson.absrap(), weight);
+      if (!bosons.empty()) {
+        const Particle& boson = bosons.front();
+        _xhists["XpT"]->fill(boson.pT()/GeV, weight);
+        _xhists["Xy"]->fill(boson.absrap(), weight);
+      }
 
       for (double R : JET_RADII) {
         const size_t iR = size_t(10 * R);
