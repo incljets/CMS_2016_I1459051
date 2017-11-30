@@ -27,7 +27,7 @@ namespace Rivet {
 
 
   // Inclusive jet pT
-  class CMS_2016_I1459051 : public Analysis {
+  class LH2017_ZHJETS : public Analysis {
   public:
 
     // Jet radii
@@ -35,7 +35,7 @@ namespace Rivet {
 
 
     // Constructor
-    DEFAULT_RIVET_ANALYSIS_CTOR(CMS_2016_I1459051);
+    DEFAULT_RIVET_ANALYSIS_CTOR(LH2017_ZHJETS);
 
 
     // Book histograms and initialize projections:
@@ -199,7 +199,7 @@ namespace Rivet {
 
 
   // Hook for the plugin system.
-  DECLARE_RIVET_PLUGIN(CMS_2016_I1459051);
+  DECLARE_RIVET_PLUGIN(LH2017_ZHJETS);
 
 
 }
