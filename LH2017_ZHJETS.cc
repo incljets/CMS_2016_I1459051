@@ -113,6 +113,7 @@ namespace Rivet {
         const FastJets& fj = apply<FastJets>(event, "JetsAK" + toString(iR));
         const Jets& jets = fj.jetsByPt(Cuts::pT > 30*GeV && Cuts::absrap < 4.5);
 
+
         // Jet multiplicity histograms
         _jhists[make_tuple(iR, "njet_excl")]->fill(jets.size(), weight);
         // for (size_t ijet = 1; ijet <= jets.size(); ++ijet) {
@@ -121,9 +122,10 @@ namespace Rivet {
 
         // Need some R-jets from here on
         if (jets.empty()) continue;
-
+       
         // Lead pT spectra in |y| bins
         const Jet& j1 = jets.front();
+        if(j1.pT()<60*GeV) continue;
         const double y1 = j1.absrap();
         const size_t iy = y1 < 1 ? 0 : (y1 < 2 ? 1 : (y1 < 3 ? 2 : (y1 < 4 ? 3 : 4)));
         if (iy < 4) _jhists[make_tuple(iR, "J1dy" + toString(iy) + "_pT")]->fill(j1.pT()/GeV, weight);
