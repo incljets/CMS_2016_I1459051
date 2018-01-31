@@ -50,7 +50,7 @@ namespace Rivet {
         declare(FastJets(fs, FastJets::ANTIKT, R, JetAlg::DECAY_MUONS), "JetsAK" + toString(iR));
 
         // Book histograms using this suffix
-        const string hsuff = "_R" + toString(iR);
+        const string hsuff = "_R" + string(iR < 10 ? "0" : "") + toString(iR);
 
         // Multiplicity histograms
         _jhists[make_tuple(iR, "njet_excl")] = bookHisto1D("njet_excl" + hsuff, 10, -0.5, 9.5);
@@ -73,7 +73,7 @@ namespace Rivet {
         // Angularities (treat multiplicity differently)
         _jhists[make_tuple(iR, "GA0000")] = bookHisto1D("GA0000"+hsuff, 151, -0.5, 150.5);
         for (const string& s : {"GA1020", "GA1010", "GA1005", "GA2000"}) { //< without GA0000 = multiplicity
-          _jhists[make_tuple(iR, s)] = bookHisto1D(s+hsuff, 200, 0.0, 1.0);
+          _jhists[make_tuple(iR, s)] = bookHisto1D(s+hsuff, 200, 0.0, 1.0); //< ranges not quite [0,1] since no WTA jet axis
         }
 
       }
@@ -113,7 +113,6 @@ namespace Rivet {
         const FastJets& fj = apply<FastJets>(event, "JetsAK" + toString(iR));
         const Jets& jets = fj.jetsByPt(Cuts::pT > 30*GeV && Cuts::absrap < 4.5);
 
-
         // Jet multiplicity histograms
         _jhists[make_tuple(iR, "njet_excl")]->fill(jets.size(), weight);
         // for (size_t ijet = 1; ijet <= jets.size(); ++ijet) {
@@ -122,10 +121,9 @@ namespace Rivet {
 
         // Need some R-jets from here on
         if (jets.empty()) continue;
-       
+
         // Lead pT spectra in |y| bins
         const Jet& j1 = jets.front();
-        if(j1.pT()<60*GeV) continue;
         const double y1 = j1.absrap();
         const size_t iy = y1 < 1 ? 0 : (y1 < 2 ? 1 : (y1 < 3 ? 2 : (y1 < 4 ? 3 : 4)));
         if (iy < 4) _jhists[make_tuple(iR, "J1dy" + toString(iy) + "_pT")]->fill(j1.pT()/GeV, weight);
@@ -160,22 +158,26 @@ namespace Rivet {
 
           // Angularities
           /// @todo The GAs are computed across all jets -- right?
-          double scalar_pt = 0, sum1020 = 0, sum1010 = 0, sum1005 = 0, sum0000 = 0, sum2000 = 0;
+          double scalar_pt = 0; //scalar_pt2 = 0;
+          double sum1020 = 0, sum1010 = 0, sum1005 = 0, sum0000 = 0, sum2000 = 0;
           for (const Particle& p : j.particles()) {
             const double pt = p.pT();
             const double dr = deltaR(p, j);
             scalar_pt += pt;
-            sum1020 += sqr(pt)  * dr;
-            sum1010 += pt       * dr;
-            sum1005 += sqrt(pt) * dr;
-            sum0000 += 1        * 1;
-            sum2000 += 1        * sqr(dr);
+            //scalar_pt2 += sqr(pt);
+            sum1020 += pt      * sqr(dr);
+            sum1010 += pt      * dr;
+            sum1005 += pt      * sqrt(dr);
+            sum0000 += 1       * 1;
+            sum2000 += sqr(pt) * 1;
           }
-          const double ga1020 = sum1020 / sqr(scalar_pt)  * R;
-          const double ga1010 = sum1010 / scalar_pt       * R;
-          const double ga1005 = sum1005 / sqrt(scalar_pt) * R;
-          const double ga0000 = sum0000 / 1               * 1;
-          const double ga2000 = sum2000 / 1               * sqr(R);
+          const double ga1020 = sum1020 / scalar_pt      / sqr(R);
+          const double ga1010 = sum1010 / scalar_pt      / R;
+          const double ga1005 = sum1005 / scalar_pt      / sqrt(R);
+          const double ga0000 = sum0000 / 1.             / 1.;
+          const double ga2000 = sum2000 / sqr(scalar_pt) / 1.;
+          //
+          if (ga2000 > 1) MSG_INFO("ga2000 > 1: " << sum2000 << " / " << sqr(scalar_pt) << " = " << ga2000);
           //
           _jhists[make_tuple(iR, "GA1020")]->fill(ga1020, weight);
           _jhists[make_tuple(iR, "GA1010")]->fill(ga1010, weight);
