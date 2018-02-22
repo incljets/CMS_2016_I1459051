@@ -102,6 +102,7 @@ namespace Rivet {
       // Fill boson pT and |y| spectra
       if (!bosons.empty()) {
         const Particle& boson = bosons.front();
+        if (boson.absrap()>2.4)vetoEvent;
         _xhists["XpT"]->fill(boson.pT()/GeV, weight);
         _xhists["Xy"]->fill(boson.absrap(), weight);
       }
