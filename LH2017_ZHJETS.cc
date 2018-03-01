@@ -70,6 +70,11 @@ namespace Rivet {
           _jhists[make_tuple(iR, hpre + "_y")] = bookHisto1D(hpre + "_y" + hsuff, 50, 0, 5);
         }
 
+        if (true){  // for the scope
+	  _jhists_av[make_tuple(iR, "av_NJet_vs_ptlead" )]= bookHisto1D("av_NJet_vs_ptlead"  + hsuff, 100, 0, 1000);
+          _jhists_av[make_tuple(iR, "av_pt_vs_Njet" )]    = bookHisto1D("av_pt_vs_Njet"      + hsuff, 10, -0.5,9.5);
+        }
+
         // Lead jet pT spectra in |y| bins 0-1-2-3-4
         for (size_t iy = 0; iy <= 3; ++iy) {
           const string hpre = "J1dy" + toString(iy);
@@ -122,6 +127,9 @@ namespace Rivet {
 
         // Jet multiplicity histograms
         _jhists[make_tuple(iR, "njet_excl")]->fill(jets.size(), weight);
+
+
+
         // for (size_t ijet = 1; ijet <= jets.size(); ++ijet) {
         //   _jhists[make_tuple(iR, "njet_incl")]->fill(ijet, weight);
         // }
@@ -131,6 +139,12 @@ namespace Rivet {
 
         // Lead pT spectra in |y| bins
         const Jet& j1 = jets.front();
+        auto httmp=0.;
+        for (const Jet& j : jets) httmp+=j.pT()/GeV;
+ 
+        _jhists_av[make_tuple(iR, "av_NJet_vs_ptlead" )]->fill( j1.pT()/GeV , weight * jets.size() );
+        _jhists_av[make_tuple(iR, "av_pt_vs_Njet" )]    ->fill( jets.size() , weight * httmp / double(jets.size()) );
+
         const double y1 = j1.absrap();
         const size_t iy = y1 < 1 ? 0 : (y1 < 2 ? 1 : (y1 < 3 ? 2 : (y1 < 4 ? 3 : 4)));
         if (iy < 4) _jhists[make_tuple(iR, "J1dy" + toString(iy) + "_pT")]->fill(j1.pT()/GeV, weight);
@@ -211,6 +225,10 @@ namespace Rivet {
         scale(k_hptr.second, crossSection()/sumOfWeights());
       for (auto k_hptr : _xhists)
         scale(k_hptr.second, crossSection()/sumOfWeights());
+
+
+      for (auto k_hptr : _jhists_av)
+        scale(k_hptr.second, 1.); // TODO is that right ???? // Each bin should be weighted by 1/(bin entrys).
       /// @todo Compute inclusive Njet spectrum here
     }
 
@@ -218,6 +236,8 @@ namespace Rivet {
   private:
 
     map<tuple<size_t,string>, Histo1DPtr> _jhists;
+    map<tuple<size_t,string>, Histo1DPtr> _jhists_av;
+
     map<string, Histo1DPtr> _xhists;
 
   };
