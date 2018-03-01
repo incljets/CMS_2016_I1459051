@@ -64,6 +64,12 @@ namespace Rivet {
           _jhists[make_tuple(iR, hpre + "_y")] = bookHisto1D(hpre + "_y" + hsuff, 50, 0, 5);
         }
 
+        if (true){  // for the scope
+          const string hpre = "J_incl";
+          _jhists[make_tuple(iR, hpre + "_pT")] = bookHisto1D(hpre + "_pT" + hsuff, 100, 0, 1000);
+          _jhists[make_tuple(iR, hpre + "_y")] = bookHisto1D(hpre + "_y" + hsuff, 50, 0, 5);
+        }
+
         // Lead jet pT spectra in |y| bins 0-1-2-3-4
         for (size_t iy = 0; iy <= 3; ++iy) {
           const string hpre = "J1dy" + toString(iy);
@@ -157,6 +163,13 @@ namespace Rivet {
             _jhists[make_tuple(iR, hpre+"_y")]->fill(j.absrap(), weight);
           }
 
+          if ( true ){ // for the scope 
+          const string hpre = "J_incl"; 
+          _jhists[make_tuple(iR, hpre+"_pT")]->fill(j.pT()/GeV, weight);                                                                                                          
+          _jhists[make_tuple(iR, hpre+"_y")]->fill(j.absrap(), weight);
+          }
+
+          
           // Angularities
           /// @todo The GAs are computed across all jets -- right?
           double scalar_pt = 0; //scalar_pt2 = 0;
